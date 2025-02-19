@@ -1,19 +1,35 @@
+import { useEffect, useState } from "react";
 import Head from "next/head";
 import Image from "next/image";
-import { Geist, Geist_Mono } from "next/font/google";
 import styles from "@/styles/Home.module.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export default function Home() {
+  const [message, setMessage] = useState(""); // Utilisation de l'état pour stocker le message
+  const [loading, setLoading] = useState(true); // Pour afficher un message de chargement pendant la récupération
+
+  useEffect(() => {
+    // Effectuer l'appel fetch vers l'API hello
+    const fetchMessage = async () => {
+      try {
+        const response = await fetch("/api/hello");
+        if (response.ok) {
+          const data = await response.json();
+          setMessage(data.name);  // Mettre à jour l'état avec le message de l'API
+          console.log('+++MSG+++: ', data)
+
+        } else {
+          setMessage("Erreur lors de la récupération des données.");
+        }
+      } catch (error) {
+        setMessage("Erreur réseau.");
+      } finally {
+        setLoading(false); // Une fois que la requête est terminée (qu'elle réussisse ou échoue), on met fin au chargement
+      }
+    };
+
+    fetchMessage();  // Appeler la fonction fetchMessage lorsque le composant est monté
+  }, []);
+
   return (
     <>
       <Head>
@@ -22,9 +38,7 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <div
-        className={`${styles.page} ${geistSans.variable} ${geistMono.variable}`}
-      >
+      <div>
         <main className={styles.main}>
           <Image
             className={styles.logo}
@@ -34,83 +48,14 @@ export default function Home() {
             height={38}
             priority
           />
-          <ol>
-            <li>
-              Get started by editing <code>pages/index.js</code>.
-            </li>
-            <li>Save and see your changes instantly.</li>
-          </ol>
 
-          <div className={styles.ctas}>
-            <a
-              className={styles.primary}
-              href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                className={styles.logo}
-                src="/vercel.svg"
-                alt="Vercel logomark"
-                width={20}
-                height={20}
-              />
-              Deploy now
-            </a>
-            <a
-              href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-              className={styles.secondary}
-            >
-              Read our docs
-            </a>
-          </div>
+          {/* Affichage conditionnel */}
+          {loading ? (
+            <p>Chargement...</p> // Afficher un message de chargement pendant que l'API est appelée
+          ) : (
+            <h1>{message}</h1> // Une fois que l'API a répondu, afficher le message
+          )}
         </main>
-        <footer className={styles.footer}>
-          <a
-            href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              aria-hidden
-              src="/file.svg"
-              alt="File icon"
-              width={16}
-              height={16}
-            />
-            Learn
-          </a>
-          <a
-            href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              aria-hidden
-              src="/window.svg"
-              alt="Window icon"
-              width={16}
-              height={16}
-            />
-            Examples
-          </a>
-          <a
-            href="https://nextjs.org?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              aria-hidden
-              src="/globe.svg"
-              alt="Globe icon"
-              width={16}
-              height={16}
-            />
-            Go to nextjs.org →
-          </a>
-        </footer>
       </div>
     </>
   );
